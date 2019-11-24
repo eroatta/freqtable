@@ -4,7 +4,7 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/eroatta/src-reader/code"
+	"github.com/eroatta/freqtable/code"
 )
 
 // Parse parses a file and creates an Abstract Syntax Tree (AST) representation.

@@ -3,8 +3,8 @@ package cloner
 import (
 	"log"
 
-	"github.com/eroatta/freqtable/code"
 	"github.com/eroatta/freqtable/step"
+	"github.com/eroatta/freqtable/code"
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"

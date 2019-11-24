@@ -35,7 +35,7 @@ func newGoodMain(url string) {
 		if len(token) == 1 {
 			continue
 		}
-		
+
 		log.Println(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
 	}
 }
