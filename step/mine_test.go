@@ -13,27 +13,17 @@ import (
 
 func TestMine_OnNoFiles_ShouldReturnMinersWithoutResults(t *testing.T) {
 	processed := step.Mine([]code.File{}, &miner{name: "empty"})
+	emptyMiner, ok := processed.(*miner)
 
-	assert.Equal(t, 1, len(processed))
-
-	emptyMiner, ok := processed["empty"].(*miner)
 	assert.True(t, ok)
 	assert.NotNil(t, emptyMiner)
 	assert.Equal(t, 0, emptyMiner.visits)
 }
 
-func TestMine_OnEmptyMiners_ShouldReturnNoResults(t *testing.T) {
-	processed := step.Mine([]code.File{}, []step.Miner{}...)
-
-	assert.Equal(t, 0, len(processed))
-}
-
 func TestMine_OnFileWithNilAST_ShouldReturnMinersWithoutResults(t *testing.T) {
 	processed := step.Mine([]code.File{{Name: "main.go"}}, &miner{name: "empty"})
+	emptyMiner, ok := processed.(*miner)
 
-	assert.Equal(t, 1, len(processed))
-
-	emptyMiner, ok := processed["empty"].(*miner)
 	assert.True(t, ok)
 	assert.NotNil(t, emptyMiner)
 	assert.Equal(t, 0, emptyMiner.visits)
@@ -76,22 +66,13 @@ func TestMine_OnTwoMiners_ShouldReturnResultsBothMiners(t *testing.T) {
 		FileSet: testFileset,
 	}
 
-	first := &miner{name: "first"}
-	second := &miner{name: "second"}
+	testMiner := &miner{name: "first"}
+	processed := step.Mine([]code.File{file1, file2}, testMiner)
+	firstMiner, ok := processed.(*miner)
 
-	processed := step.Mine([]code.File{file1, file2}, first, second)
-
-	assert.Equal(t, 2, len(processed))
-
-	firstMiner, ok := processed["first"].(*miner)
 	assert.True(t, ok)
 	assert.NotNil(t, firstMiner)
 	assert.Equal(t, 8, firstMiner.visits)
-
-	secondMiner, ok := processed["second"].(*miner)
-	assert.True(t, ok)
-	assert.NotNil(t, secondMiner)
-	assert.Equal(t, 8, secondMiner.visits)
 }
 
 type miner struct {

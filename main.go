@@ -12,7 +12,8 @@ import (
 
 func main() {
 	config := BuilderConfig{
-		clonerFunc: cloner.New(),
+		cloner: cloner.New(),
+		miner:  miner.NewCount(),
 	}
 
 	url := "https://github.com/src-d/go-siva"
@@ -31,14 +32,15 @@ func main() {
 }
 
 type BuilderConfig struct {
-	clonerFunc step.Cloner
+	cloner step.Cloner
+	miner  step.Miner
 }
 
 var ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
 
 func Build(url string, config BuilderConfig) (map[string]int, error) {
 	// cloning step
-	_, filesc, err := step.Clone(url, config.clonerFunc)
+	_, filesc, err := step.Clone(url, config.cloner)
 	if err != nil {
 		// TODO: improve error logging
 		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
@@ -50,9 +52,8 @@ func Build(url string, config BuilderConfig) (map[string]int, error) {
 	files := step.Merge(parsedc)
 
 	// mining step
-	countMiner := miner.NewCount()
-	miningResults := step.Mine(files, countMiner)
-	countResults := miningResults[countMiner.Name()].(miner.Count)
+	miningResults := step.Mine(files, config.miner)
+	countResults := miningResults.(miner.Count)
 
 	return countResults.Results().(map[string]int), nil
 }

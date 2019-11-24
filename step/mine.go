@@ -2,7 +2,6 @@ package step
 
 import (
 	"go/ast"
-	"sync"
 
 	"github.com/eroatta/freqtable/code"
 )
@@ -16,37 +15,15 @@ type Miner interface {
 }
 
 // Mine traverses each Abstract Syntax Tree and applies every given miner to extract
-// the required pre-processing information. It returns a map of miners after work is done.
-func Mine(parsed []code.File, miners ...Miner) map[string]Miner {
-	minersc := make(chan Miner)
+// the required pre-processing information. It returns the miner after work is done.
+func Mine(parsed []code.File, miner Miner) Miner {
+	for _, f := range parsed {
+		if f.AST == nil {
+			continue
+		}
 
-	var wg sync.WaitGroup
-	wg.Add(len(miners))
-	for _, miner := range miners {
-		go func(miner Miner) {
-			defer wg.Done()
-
-			for _, f := range parsed {
-				if f.AST == nil {
-					continue
-				}
-
-				ast.Walk(miner, f.AST)
-			}
-
-			minersc <- miner
-		}(miner)
+		ast.Walk(miner, f.AST)
 	}
 
-	go func() {
-		wg.Wait()
-		close(minersc)
-	}()
-
-	results := make(map[string]Miner)
-	for miner := range minersc {
-		results[miner.Name()] = miner
-	}
-
-	return results
+	return miner
 }
