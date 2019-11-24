@@ -1,0 +1,43 @@
+@@startuml Freqtable Class Diagram
+
+package freqtable {
+    class FrequencyTable {
+        + ID : string
+        + Error : error
+        + Values : map[string]int
+        + Status() string
+    }
+}
+
+package builder {
+    class builder.Functions <<(F, orchid)>> {
+        + Run(url string, BuildConfig) (map[string]int, error)
+        - clone(url string, cloner Cloner) (code.Repository, chan code.File, error)
+        - parse(filesc <-chan code.File) chan code.File
+        - merge(parsedc <-chan code.File) []code.File
+        - mine(parsed []code.File, miner Miner) Miner
+    }
+
+    class builder.Config {
+        + Cloner : builder.Cloner
+        + Miner : builder.Miner
+    }
+
+    interface builder.Cloner {
+        Clone(url string) (code.Repository, error)
+        Filenames() ([]string, error)
+        File(name string) (code.Repository, error)
+    }
+
+    interface builder.Miner {
+        Name() string
+        Visit(node ast.Node) ast.Visitor
+        Results() map[string]int //TODO
+    }
+
+    builder.Functions -- builder.Config : set up by >
+    builder.Functions -- builder.Cloner : acceses repository by >
+    builder.Functions -- builder.Miner : gets info through >
+}
+
+@@enduml

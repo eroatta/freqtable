@@ -1,0 +1,14 @@
+@@startuml Freqtable Use Cases Diagram
+
+actor User
+
+rectangle freqtable {
+    usecase (Extract Frequency Table \nfor Repository) as Extract
+    usecase (Merge Frequency Tables) as Merge
+}
+
+left to right direction
+User --> Extract
+User --> Merge
+
+@@enduml
