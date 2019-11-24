@@ -14,7 +14,8 @@ type Repository struct {
 	Error       error
 }
 
-// File TODO
+// File represents a file on a code.Repository, and contains a raw representation and
+// a ast.File representation.
 type File struct {
 	Name    string
 	Raw     []byte

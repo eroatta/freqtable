@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
@@ -10,14 +11,38 @@ import (
 )
 
 func main() {
-	newGoodMain("https://github.com/src-d/go-siva")
+	config := BuilderConfig{
+		clonerFunc: cloner.New(),
+	}
+
+	url := "https://github.com/src-d/go-siva"
+	frequencies, err := Build(url, config)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for token, count := range frequencies {
+		if len(token) == 1 {
+			continue
+		}
+
+		log.Println(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
+	}
 }
 
-func newGoodMain(url string) {
+type BuilderConfig struct {
+	clonerFunc step.Cloner
+}
+
+var ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
+
+func Build(url string, config BuilderConfig) (map[string]int, error) {
 	// cloning step
-	_, filesc, err := step.Clone(url, cloner.New())
+	_, filesc, err := step.Clone(url, config.clonerFunc)
 	if err != nil {
-		log.Fatalf("Error reading repository %s: %v", url, err)
+		// TODO: improve error logging
+		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
+		return nil, ErrCloningRepository
 	}
 
 	// parsing step
@@ -26,16 +51,8 @@ func newGoodMain(url string) {
 
 	// mining step
 	countMiner := miner.NewCount()
-
 	miningResults := step.Mine(files, countMiner)
-
 	countResults := miningResults[countMiner.Name()].(miner.Count)
-	freq := countResults.Results().(map[string]int)
-	for token, count := range freq {
-		if len(token) == 1 {
-			continue
-		}
 
-		log.Println(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
-	}
+	return countResults.Results().(map[string]int), nil
 }
