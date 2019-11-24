@@ -1,43 +1,90 @@
 @@startuml Freqtable Class Diagram
 
-package freqtable {
-    class FrequencyTable {
-        + ID : string
-        + Error : error
-        + Values : map[string]int
-        + Status() string
+package domain {
+    package domain.model {
+        class domain.model.FrequencyTable {
+            + ID : string
+            + Error : error
+            + Values : map[string]int
+            + Status() string
+        }
+    }
+
+    package domain.repository {
+        interface domain.repository.FrequencyTableRepository {
+            Save(ft domain.FrequencyTable) error
+        }
+
+        interface domain.repository.WordCountRepository {
+            Extract(url string) (map[string]int, error)
+        }
+    }
+
+    package domain.service {
+        class domain.service.FrequencyTableService {
+            + Duplicated(url string) error
+            + Create(url string) FrequencyTable
+        }
+        domain.service.FrequencyTableService -- domain.repository.WordCountRepository : extracts word count >
+        domain.service.FrequencyTableService -- domain.repository.FrequencyTableRepository : persists >
+        domain.service.FrequencyTableService -- domain.model.FrequencyTable
     }
 }
 
-package builder {
-    class builder.Functions <<(F, orchid)>> {
-        + Run(url string, BuildConfig) (map[string]int, error)
-        - clone(url string, cloner Cloner) (code.Repository, chan code.File, error)
-        - parse(filesc <-chan code.File) chan code.File
-        - merge(parsedc <-chan code.File) []code.File
-        - mine(parsed []code.File, miner Miner) Miner
+package usecase {
+    interface usecase.FrequencyTableUseCase {
+        + Create(url string) FrequencyTable
+        + CreateMultiple(urls []string) FrequencyTable
+        + MergeAll(ids []string) FrequencyTable
     }
 
-    class builder.Config {
-        + Cloner : builder.Cloner
-        + Miner : builder.Miner
+    class usecase.frequencyTableUseCase
+    usecase.frequencyTableUseCase --|> usecase.FrequencyTableUseCase
+    usecase.frequencyTableUseCase -- domain.service.FrequencyTableService : uses >
+}
+
+package adapter {
+    package adapter.persistence {
+        class adapter.persistence.InMemory
+        adapter.persistence.InMemory --|> domain.repository.FrequencyTableRepository
+
+        class adapter.persistence.FileSystem
+        adapter.persistence.FileSystem --|> domain.repository.FrequencyTableRepository
+
+        class adapter.persistence.SQLStorage
+        adapter.persistence.SQLStorage --|> domain.repository.FrequencyTableRepository
     }
 
-    interface builder.Cloner {
-        Clone(url string) (code.Repository, error)
-        Filenames() ([]string, error)
-        File(name string) (code.Repository, error)
-    }
+    package adapter.wordcount {
+        class adapter.wordcount.Processor {
+            - config : adapter.wordcount.ProcessorConfig
+            + Extract(url string) (map[string]int, error)
+            - clone(url string, cloner Cloner) (code.Repository, chan code.File, error)
+            - parse(filesc <-chan code.File) chan code.File
+            - merge(parsedc <-chan code.File) []code.File
+            - mine(parsed []code.File, miner Miner) Miner
+        }
 
-    interface builder.Miner {
-        Name() string
-        Visit(node ast.Node) ast.Visitor
-        Results() map[string]int //TODO
-    }
+        class adapter.wordcount.ProcessorConfig {
+            + ClonerFunc : builder.Cloner
+            + MinerFunc : builder.Miner
+        }
 
-    builder.Functions -- builder.Config : set up by >
-    builder.Functions -- builder.Cloner : acceses repository by >
-    builder.Functions -- builder.Miner : gets info through >
+        interface adapter.wordcount.Cloner {
+            Clone(url string) (Repository, error)
+            Filenames() ([]string, error)
+            File(name string) (Repository, error)
+        }
+
+        interface adapter.wordcount.Miner {
+            Visit(node ast.Node) ast.Visitor
+            Results() map[string]int
+        }
+
+        adapter.wordcount.Processor -- adapter.wordcount.ProcessorConfig : set up by >
+        adapter.wordcount.Processor -- adapter.wordcount.Cloner : acceses repository by >
+        adapter.wordcount.Processor -- adapter.wordcount.Miner : gets info through >
+    }
 }
 
 @@enduml
