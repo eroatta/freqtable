@@ -4,11 +4,14 @@ actor User
 
 rectangle freqtable {
     usecase (Extract Frequency Table \nfor Repository) as Extract
+    usecase (Extract Frequency Tables \nfor Multiple Repositories) as ExtractMulti
     usecase (Merge Frequency Tables) as Merge
 }
 
 left to right direction
 User --> Extract
+User --> ExtractMulti
+ExtractMulti .> Extract : extends
 User --> Merge
 
 @@enduml

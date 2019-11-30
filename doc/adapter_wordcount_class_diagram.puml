@@ -1,0 +1,34 @@
+@@startuml Package adapter/wordcount Class Diagram
+
+package adapter.wordcount {
+    class adapter.wordcount.Processor {
+        - config : adapter.wordcount.ProcessorConfig
+        + Extract(url string) (map[string]int, error)
+        - clone(url string, cloner Cloner) (code.Repository, chan code.File, error)
+        - parse(filesc <-chan code.File) chan code.File
+        - merge(parsedc <-chan code.File) []code.File
+        - mine(parsed []code.File, miner Miner) Miner
+    }
+
+    class adapter.wordcount.ProcessorConfig {
+        + ClonerFunc : builder.Cloner
+        + MinerFunc : builder.Miner
+    }
+
+    interface adapter.wordcount.Cloner {
+        Clone(url string) (Repository, error)
+        Filenames() ([]string, error)
+        File(name string) (Repository, error)
+    }
+
+    interface adapter.wordcount.Miner {
+        Visit(node ast.Node) ast.Visitor
+        Results() map[string]int
+    }
+
+    adapter.wordcount.Processor -- adapter.wordcount.ProcessorConfig : set up by >
+    adapter.wordcount.Processor -- adapter.wordcount.Cloner : acceses repository by >
+    adapter.wordcount.Processor -- adapter.wordcount.Miner : gets info through >
+}
+
+@@enduml
