@@ -3,8 +3,8 @@ package cloner
 import (
 	"log"
 
-	"github.com/eroatta/freqtable/step"
-	"github.com/eroatta/freqtable/code"
+	"github.com/eroatta/freqtable/adapter/wordcount/step"
+	"github.com/eroatta/freqtable/adapter/wordcount"
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
@@ -37,15 +37,15 @@ func goGitClonerFunc(url string) (*git.Repository, error) {
 	})
 }
 
-func (c *goGitCloner) Clone(url string) (code.Repository, error) {
+func (c *goGitCloner) Clone(url string) (wordcount.Repository, error) {
 	log.Println("Cloning repository...")
 	repository, err := c.clonerFunc(url)
 	if err != nil {
-		return code.Repository{}, err
+		return wordcount.Repository{}, err
 	}
 	c.repository = repository
 
-	return code.Repository{Name: url}, nil
+	return wordcount.Repository{Name: url}, nil
 }
 
 // Filenames retrieves the list of file names existing on a repository.

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eroatta/freqtable/code"
-	"github.com/eroatta/freqtable/step"
+	"github.com/eroatta/freqtable/adapter/wordcount"
+	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +23,7 @@ func TestClone_OnErrorWhileCloning_ShouldReturnError(t *testing.T) {
 
 func TestClone_OnErrorWhileRetrievingFilenames_ShouldReturnError(t *testing.T) {
 	cloner := cloner{
-		repo:     code.Repository{Name: "github.com/test/repo"},
+		repo:     wordcount.Repository{Name: "github.com/test/repo"},
 		filesErr: errors.New("Error retriving list of file names for git@github.com:test:repo"),
 	}
 
@@ -36,7 +36,7 @@ func TestClone_OnErrorWhileRetrievingFilenames_ShouldReturnError(t *testing.T) {
 
 func TestClone_OnErrorWhileRetrievingFile_ShouldReturnFileContainingError(t *testing.T) {
 	cloner := cloner{
-		repo:        code.Repository{Name: "github.com/test/repo"},
+		repo:        wordcount.Repository{Name: "github.com/test/repo"},
 		files:       []string{"main.go"},
 		rawFilesErr: errors.New("Error retriving file main.go for git@github.com:test:repo"),
 	}
@@ -54,7 +54,7 @@ func TestClone_OnErrorWhileRetrievingFile_ShouldReturnFileContainingError(t *tes
 
 func TestClone_OnNonGolangRepository_ShouldReturnZeroFiles(t *testing.T) {
 	cloner := cloner{
-		repo:     code.Repository{Name: "github.com/test/repo"},
+		repo:     wordcount.Repository{Name: "github.com/test/repo"},
 		files:    []string{"README.md"},
 		rawFiles: map[string][]byte{},
 	}
@@ -74,7 +74,7 @@ func TestClone_OnNonGolangRepository_ShouldReturnZeroFiles(t *testing.T) {
 
 func TestClone_OnGolangRepository_ShouldReturnAllGolangFiles(t *testing.T) {
 	cloner := cloner{
-		repo:  code.Repository{Name: "github.com/test/repo"},
+		repo:  wordcount.Repository{Name: "github.com/test/repo"},
 		files: []string{"main.go", "test.go"},
 		rawFiles: map[string][]byte{
 			"main.go": []byte("package main"),
@@ -88,7 +88,7 @@ func TestClone_OnGolangRepository_ShouldReturnAllGolangFiles(t *testing.T) {
 	assert.NotNil(t, filesc)
 	assert.Nil(t, err)
 
-	files := make(map[string]code.File)
+	files := make(map[string]wordcount.File)
 	for file := range filesc {
 		files[file.Name] = file
 	}
@@ -99,7 +99,7 @@ func TestClone_OnGolangRepository_ShouldReturnAllGolangFiles(t *testing.T) {
 }
 
 type cloner struct {
-	repo        code.Repository
+	repo        wordcount.Repository
 	repoErr     error
 	files       []string
 	filesErr    error
@@ -107,9 +107,9 @@ type cloner struct {
 	rawFilesErr error
 }
 
-func (c cloner) Clone(url string) (code.Repository, error) {
+func (c cloner) Clone(url string) (wordcount.Repository, error) {
 	if c.repoErr != nil {
-		return code.Repository{}, c.repoErr
+		return wordcount.Repository{}, c.repoErr
 	}
 
 	return c.repo, nil

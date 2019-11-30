@@ -3,13 +3,13 @@ package step
 import (
 	"strings"
 
-	"github.com/eroatta/freqtable/code"
+	"github.com/eroatta/freqtable/adapter/wordcount"
 )
 
 // Cloner interface is used to define a custom cloner.
 type Cloner interface {
 	// Clone accesses a repository and clones it.
-	Clone(url string) (code.Repository, error)
+	Clone(url string) (wordcount.Repository, error)
 	// Filenames retrieves the names of the existing files on a repository.
 	Filenames() ([]string, error)
 	// File provides the bytes representation of a given file.
@@ -18,7 +18,7 @@ type Cloner interface {
 
 // Clone retrieves the source code from a given URL. It access the repository, clones it,
 // filters non-go files and returns a channel of code.File elements.
-func Clone(url string, cloner Cloner) (*code.Repository, <-chan code.File, error) {
+func Clone(url string, cloner Cloner) (*wordcount.Repository, <-chan wordcount.File, error) {
 	repo, err := cloner.Clone(url)
 	if err != nil {
 		return nil, nil, err
@@ -42,12 +42,12 @@ func Clone(url string, cloner Cloner) (*code.Repository, <-chan code.File, error
 		close(namesc)
 	}()
 
-	filesc := make(chan code.File)
+	filesc := make(chan wordcount.File)
 	go func() {
 		for n := range namesc {
 			rawFile, err := cloner.File(n)
 
-			file := code.File{
+			file := wordcount.File{
 				Name:  n,
 				Raw:   rawFile,
 				Error: err,

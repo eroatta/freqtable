@@ -1,4 +1,4 @@
-package code
+package wordcount
 
 import (
 	"go/ast"

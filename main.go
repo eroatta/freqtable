@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/eroatta/freqtable/cloner"
-	"github.com/eroatta/freqtable/miner"
-	"github.com/eroatta/freqtable/step"
+	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
+	"github.com/eroatta/freqtable/adapter/wordcount/miner"
+	"github.com/eroatta/freqtable/adapter/wordcount/step"
 )
 
 func main() {

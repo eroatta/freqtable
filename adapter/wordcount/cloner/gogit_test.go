@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/src-d/go-billy.v4/memfs"
 
-	"github.com/eroatta/freqtable/code"
+	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/stretchr/testify/assert"
 	git "gopkg.in/src-d/go-git.v4"
 )
@@ -32,7 +32,7 @@ func TestClone_OnGoGitClonerWithError_ShouldReturnAnError(t *testing.T) {
 	}
 	repository, err := clnr.Clone("git@github.com/test/case")
 
-	assert.Equal(t, code.Repository{}, repository, "cloned repository should be empty")
+	assert.Equal(t, wordcount.Repository{}, repository, "cloned repository should be empty")
 	assert.Equal(t, "Connection error", err.Error())
 }
 

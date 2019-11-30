@@ -3,13 +3,13 @@ package step_test
 import (
 	"testing"
 
-	"github.com/eroatta/freqtable/code"
-	"github.com/eroatta/freqtable/step"
+	"github.com/eroatta/freqtable/adapter/wordcount"
+	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParse_OnClosedChannel_ShouldSendNoElements(t *testing.T) {
-	filesc := make(chan code.File)
+	filesc := make(chan wordcount.File)
 	close(filesc)
 
 	parsedc := step.Parse(filesc)
@@ -23,9 +23,9 @@ func TestParse_OnClosedChannel_ShouldSendNoElements(t *testing.T) {
 }
 
 func TestParse_OnFileWithError_ShouldSendFileWithErrorMessage(t *testing.T) {
-	filesc := make(chan code.File)
+	filesc := make(chan wordcount.File)
 	go func() {
-		filesc <- code.File{
+		filesc <- wordcount.File{
 			Name: "failing.go",
 			Raw:  []byte("packaaage failing"),
 		}
@@ -34,7 +34,7 @@ func TestParse_OnFileWithError_ShouldSendFileWithErrorMessage(t *testing.T) {
 
 	parsedc := step.Parse(filesc)
 
-	files := make([]code.File, 0)
+	files := make([]wordcount.File, 0)
 	for file := range parsedc {
 		files = append(files, file)
 	}
@@ -44,14 +44,14 @@ func TestParse_OnFileWithError_ShouldSendFileWithErrorMessage(t *testing.T) {
 }
 
 func TestParse_OnTwoFiles_ShouldSendTwoParsedFilesWithSameFileset(t *testing.T) {
-	filesc := make(chan code.File)
+	filesc := make(chan wordcount.File)
 	go func() {
-		filesc <- code.File{
+		filesc <- wordcount.File{
 			Name: "main.go",
 			Raw:  []byte("package main"),
 		}
 
-		filesc <- code.File{
+		filesc <- wordcount.File{
 			Name: "test.go",
 			Raw:  []byte("package test"),
 		}
@@ -61,7 +61,7 @@ func TestParse_OnTwoFiles_ShouldSendTwoParsedFilesWithSameFileset(t *testing.T) 
 
 	parsedc := step.Parse(filesc)
 
-	files := make(map[string]code.File)
+	files := make(map[string]wordcount.File)
 	for file := range parsedc {
 		files[file.Name] = file
 	}
@@ -82,7 +82,7 @@ func TestParse_OnTwoFiles_ShouldSendTwoParsedFilesWithSameFileset(t *testing.T) 
 }
 
 func TestMerge_OnClosedChannel_ShouldReturnEmptyArray(t *testing.T) {
-	parsedc := make(chan code.File)
+	parsedc := make(chan wordcount.File)
 	close(parsedc)
 
 	got := step.Merge(parsedc)
@@ -91,10 +91,10 @@ func TestMerge_OnClosedChannel_ShouldReturnEmptyArray(t *testing.T) {
 }
 
 func TestMerge_OnTwoFiles_ShouldReturnTwoFiles(t *testing.T) {
-	parsedc := make(chan code.File)
+	parsedc := make(chan wordcount.File)
 	go func() {
-		parsedc <- code.File{}
-		parsedc <- code.File{}
+		parsedc <- wordcount.File{}
+		parsedc <- wordcount.File{}
 		close(parsedc)
 	}()
 
