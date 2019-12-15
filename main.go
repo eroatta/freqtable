@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
 	"github.com/eroatta/freqtable/adapter/wordcount/step"
@@ -32,8 +33,8 @@ func main() {
 }
 
 type BuilderConfig struct {
-	cloner step.Cloner
-	miner  step.Miner
+	cloner wordcount.Cloner
+	miner  wordcount.Miner
 }
 
 var ErrCloningRepository = errors.New("Error while reading/cloning remote repository")

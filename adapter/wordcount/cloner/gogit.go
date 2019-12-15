@@ -3,7 +3,6 @@ package cloner
 import (
 	"log"
 
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/eroatta/freqtable/adapter/wordcount"
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
@@ -16,7 +15,7 @@ const (
 )
 
 // New creates and initializes a new cloner.
-func New() step.Cloner {
+func New() wordcount.Cloner {
 	return &goGitCloner{
 		clonerFunc: goGitClonerFunc,
 	}

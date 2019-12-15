@@ -1,4 +1,4 @@
-package step_test
+package wordcount_test
 
 import (
 	"go/ast"
@@ -7,12 +7,11 @@ import (
 	"testing"
 
 	"github.com/eroatta/freqtable/adapter/wordcount"
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMine_OnNoFiles_ShouldReturnMinersWithoutResults(t *testing.T) {
-	processed := step.Mine([]wordcount.File{}, &miner{name: "empty"})
+	processed := wordcount.Mine([]wordcount.File{}, &miner{name: "empty"})
 	emptyMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)
@@ -21,7 +20,7 @@ func TestMine_OnNoFiles_ShouldReturnMinersWithoutResults(t *testing.T) {
 }
 
 func TestMine_OnFileWithNilAST_ShouldReturnMinersWithoutResults(t *testing.T) {
-	processed := step.Mine([]wordcount.File{{Name: "main.go"}}, &miner{name: "empty"})
+	processed := wordcount.Mine([]wordcount.File{{Name: "main.go"}}, &miner{name: "empty"})
 	emptyMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)
@@ -67,7 +66,7 @@ func TestMine_OnTwoMiners_ShouldReturnResultsBothMiners(t *testing.T) {
 	}
 
 	testMiner := &miner{name: "first"}
-	processed := step.Mine([]wordcount.File{file1, file2}, testMiner)
+	processed := wordcount.Mine([]wordcount.File{file1, file2}, testMiner)
 	firstMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)

@@ -1,11 +1,10 @@
-package step_test
+package wordcount_test
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/eroatta/freqtable/adapter/wordcount"
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +13,7 @@ func TestClone_OnErrorWhileCloning_ShouldReturnError(t *testing.T) {
 		repoErr: errors.New("Error cloning remote repository git@github.com:test:repo"),
 	}
 
-	repo, filesc, err := step.Clone("git@github.com:test:repo", cloner)
+	repo, filesc, err := wordcount.Clone("git@github.com:test:repo", cloner)
 
 	assert.EqualError(t, err, "Error cloning remote repository git@github.com:test:repo")
 	assert.Nil(t, repo)
@@ -27,7 +26,7 @@ func TestClone_OnErrorWhileRetrievingFilenames_ShouldReturnError(t *testing.T) {
 		filesErr: errors.New("Error retriving list of file names for git@github.com:test:repo"),
 	}
 
-	repo, filesc, err := step.Clone("git@github.com:test:repo", cloner)
+	repo, filesc, err := wordcount.Clone("git@github.com:test:repo", cloner)
 
 	assert.EqualError(t, err, "Error retriving list of file names for git@github.com:test:repo")
 	assert.Nil(t, repo)
@@ -41,7 +40,7 @@ func TestClone_OnErrorWhileRetrievingFile_ShouldReturnFileContainingError(t *tes
 		rawFilesErr: errors.New("Error retriving file main.go for git@github.com:test:repo"),
 	}
 
-	repo, filesc, err := step.Clone("git@github.com:test:repo", cloner)
+	repo, filesc, err := wordcount.Clone("git@github.com:test:repo", cloner)
 
 	assert.NotNil(t, repo)
 	assert.NotNil(t, filesc)
@@ -59,7 +58,7 @@ func TestClone_OnNonGolangRepository_ShouldReturnZeroFiles(t *testing.T) {
 		rawFiles: map[string][]byte{},
 	}
 
-	repo, filesc, err := step.Clone("git@github.com:test:repo", cloner)
+	repo, filesc, err := wordcount.Clone("git@github.com:test:repo", cloner)
 
 	assert.NotNil(t, repo)
 	assert.NotNil(t, filesc)
@@ -82,7 +81,7 @@ func TestClone_OnGolangRepository_ShouldReturnAllGolangFiles(t *testing.T) {
 		},
 	}
 
-	repo, filesc, err := step.Clone("git@github.com:test:repo", cloner)
+	repo, filesc, err := wordcount.Clone("git@github.com:test:repo", cloner)
 
 	assert.NotNil(t, repo)
 	assert.NotNil(t, filesc)
