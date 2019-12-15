@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"go/ast"
 	"log"
-
-	"github.com/eroatta/freqtable/adapter/wordcount/miner"
 )
 
 type Processor struct {
 	config ProcessorConfig
 }
 
+func NewProcessor(config ProcessorConfig) Processor {
+	return Processor{
+		config: config,
+	}
+}
+
 type ProcessorConfig struct {
-	ClonerFunc Cloner
-	MinerFunc  Miner
+	Cloner Cloner
+	Miner  Miner
 }
 
 // Cloner interface is used to define a custom cloner.
@@ -34,26 +38,25 @@ type Miner interface {
 	Name() string
 	// Visit applies the mining logic while traversing the Abstract Syntax Tree.
 	Visit(node ast.Node) ast.Visitor
+	// Results provides the mining results.
+	Results() map[string]int
 }
 
 var ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
 
 func (p Processor) Extract(url string) (map[string]int, error) {
 	// cloning step
-	_, filesc, err := step.Clone(url, p.config.ClonerFunc)
+	_, filesc, err := Clone(url, p.config.Cloner)
 	if err != nil {
 		// TODO: improve error logging
 		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
 		return nil, ErrCloningRepository
 	}
 
-	// parsing step
-	parsedc := step.Parse(filesc)
-	files := step.Merge(parsedc)
+	// parsing & mining steps
+	parsedc := Parse(filesc)
+	files := Merge(parsedc)
+	miningResults := Mine(files, p.config.Miner)
 
-	// mining step
-	miningResults := step.Mine(files, p.config.MinerFunc)
-	countResults := miningResults.(miner.Count)
-
-	return countResults.Results().(map[string]int), nil
+	return miningResults.Results(), nil
 }

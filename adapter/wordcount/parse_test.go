@@ -1,10 +1,9 @@
-package step_test
+package wordcount_test
 
 import (
 	"testing"
 
 	"github.com/eroatta/freqtable/adapter/wordcount"
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +11,7 @@ func TestParse_OnClosedChannel_ShouldSendNoElements(t *testing.T) {
 	filesc := make(chan wordcount.File)
 	close(filesc)
 
-	parsedc := step.Parse(filesc)
+	parsedc := wordcount.Parse(filesc)
 
 	var parsedFiles int
 	for range parsedc {
@@ -32,7 +31,7 @@ func TestParse_OnFileWithError_ShouldSendFileWithErrorMessage(t *testing.T) {
 		close(filesc)
 	}()
 
-	parsedc := step.Parse(filesc)
+	parsedc := wordcount.Parse(filesc)
 
 	files := make([]wordcount.File, 0)
 	for file := range parsedc {
@@ -59,7 +58,7 @@ func TestParse_OnTwoFiles_ShouldSendTwoParsedFilesWithSameFileset(t *testing.T) 
 		close(filesc)
 	}()
 
-	parsedc := step.Parse(filesc)
+	parsedc := wordcount.Parse(filesc)
 
 	files := make(map[string]wordcount.File)
 	for file := range parsedc {
@@ -85,7 +84,7 @@ func TestMerge_OnClosedChannel_ShouldReturnEmptyArray(t *testing.T) {
 	parsedc := make(chan wordcount.File)
 	close(parsedc)
 
-	got := step.Merge(parsedc)
+	got := wordcount.Merge(parsedc)
 
 	assert.Empty(t, got)
 }
@@ -98,7 +97,7 @@ func TestMerge_OnTwoFiles_ShouldReturnTwoFiles(t *testing.T) {
 		close(parsedc)
 	}()
 
-	got := step.Merge(parsedc)
+	got := wordcount.Merge(parsedc)
 
 	assert.Equal(t, 2, len(got))
 }

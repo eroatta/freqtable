@@ -214,6 +214,6 @@ func countOnFile(elem *ast.File) []string {
 }
 
 // Results returns the word count.
-func (m Count) Results() interface{} {
+func (m Count) Results() map[string]int {
 	return m.words
 }

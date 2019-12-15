@@ -846,7 +846,7 @@ func TestResults_OnCountExtractorAfterExtraction_ShouldReturnWordCount(t *testin
 	count := NewCount()
 	ast.Walk(count, node)
 
-	wordCount := count.Results().(map[string]int)
+	wordCount := count.Results()
 	assert.NotEmpty(t, wordCount)
 	assert.Equal(t, 1, len(wordCount))
 

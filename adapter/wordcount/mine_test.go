@@ -87,3 +87,7 @@ func (m *miner) Visit(n ast.Node) ast.Visitor {
 	m.visits++
 	return m
 }
+
+func (m *miner) Results() map[string]int {
+	return nil
+}

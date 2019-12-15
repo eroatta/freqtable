@@ -1,18 +1,16 @@
-package step
+package wordcount
 
 import (
 	"go/parser"
 	"go/token"
-
-	"github.com/eroatta/freqtable/adapter/wordcount"
 )
 
 // Parse parses a file and creates an Abstract Syntax Tree (AST) representation.
 // It handles and returns a channel of code.File elements.
-func Parse(filesc <-chan wordcount.File) chan wordcount.File {
+func Parse(filesc <-chan File) chan File {
 	fset := token.NewFileSet()
 
-	parsedc := make(chan wordcount.File)
+	parsedc := make(chan File)
 	go func() {
 		for file := range filesc {
 			node, err := parser.ParseFile(fset, file.Name, file.Raw, parser.ParseComments)
@@ -30,8 +28,8 @@ func Parse(filesc <-chan wordcount.File) chan wordcount.File {
 }
 
 // Merge joins files when necessary.
-func Merge(parsedc <-chan wordcount.File) []wordcount.File {
-	files := make([]wordcount.File, 0)
+func Merge(parsedc <-chan File) []File {
+	files := make([]File, 0)
 	for file := range parsedc {
 		files = append(files, file)
 	}

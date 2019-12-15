@@ -1,24 +1,23 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
 	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 )
 
 func main() {
-	config := BuilderConfig{
-		cloner: cloner.New(),
-		miner:  miner.NewCount(),
+	config := wordcount.ProcessorConfig{
+		Cloner: cloner.New(),
+		Miner:  miner.NewCount(),
 	}
 
 	url := "https://github.com/src-d/go-siva"
-	frequencies, err := Build(url, config)
+	processor := wordcount.NewProcessor(config)
+	frequencies, err := processor.Extract(url) //Build(url, config)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -32,16 +31,18 @@ func main() {
 	}
 }
 
+/*
 type BuilderConfig struct {
 	cloner wordcount.Cloner
 	miner  wordcount.Miner
-}
+}*/
 
+/*
 var ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
 
 func Build(url string, config BuilderConfig) (map[string]int, error) {
 	// cloning step
-	_, filesc, err := step.Clone(url, config.cloner)
+	_, filesc, err := wordcount.Clone(url, config.cloner)
 	if err != nil {
 		// TODO: improve error logging
 		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
@@ -49,12 +50,12 @@ func Build(url string, config BuilderConfig) (map[string]int, error) {
 	}
 
 	// parsing step
-	parsedc := step.Parse(filesc)
-	files := step.Merge(parsedc)
+	parsedc := wordcount.Parse(filesc)
+	files := wordcount.Merge(parsedc)
 
 	// mining step
-	miningResults := step.Mine(files, config.miner)
+	miningResults := wordcount.Mine(files, config.miner)
 	countResults := miningResults.(miner.Count)
 
 	return countResults.Results().(map[string]int), nil
-}
+}*/
