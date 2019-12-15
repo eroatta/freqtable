@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
-	"github.com/eroatta/freqtable/adapter/wordcount/step"
 )
 
 type Processor struct {
