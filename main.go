@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
+	"github.com/eroatta/freqtable/adapter/persistence"
 	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
+	"github.com/eroatta/freqtable/usecase"
 )
 
 func main() {
@@ -17,12 +20,18 @@ func main() {
 
 	url := "https://github.com/src-d/go-siva"
 	processor := wordcount.NewProcessor(config)
-	frequencies, err := processor.Extract(url)
+	storage := persistence.NewInMemory()
+
+	createFreqTableUC := usecase.NewCreateFrequencyTableUsecase(processor, storage)
+
+	ctx := context.Background()
+	ft, err := createFreqTableUC.Create(ctx, url)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	for token, count := range frequencies {
+	log.Println(fmt.Sprintf("Frequency Table - ID: %s - # Values: %d - Error: %v", ft.ID, len(ft.Values), ft.Error))
+	for token, count := range ft.Values {
 		if len(token) == 1 {
 			continue
 		}
