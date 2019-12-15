@@ -1,10 +1,13 @@
 package usecase
 
-import "github.com/eroatta/freqtable/entity"
+import (
+	"context"
+	"crypto/md5"
+	"fmt"
 
-import "context"
-
-import "github.com/eroatta/freqtable/repository"
+	"github.com/eroatta/freqtable/entity"
+	"github.com/eroatta/freqtable/repository"
+)
 
 // CreateFrequencyTableUsecase defines the contract for the use cases related to the
 // creation of one or several frenquency tables.
@@ -32,7 +35,7 @@ type createFrequencyTableUsecase struct {
 // Create creates a new entity.FrequencyTable from the given URL.
 func (uc createFrequencyTableUsecase) Create(ctx context.Context, url string) (entity.FrequencyTable, error) {
 	ft := entity.FrequencyTable{
-		ID: "", // TODO: build ID from URL
+		ID: fmt.Sprintf("%x", md5.Sum([]byte(url))),
 	}
 
 	values, err := uc.wcr.Extract(url)
