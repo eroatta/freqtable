@@ -46,7 +46,7 @@ var ErrCloningRepository = errors.New("Error while reading/cloning remote reposi
 
 func (p Processor) Extract(url string) (map[string]int, error) {
 	// cloning step
-	_, filesc, err := Clone(url, p.config.Cloner)
+	_, filesc, err := clone(url, p.config.Cloner)
 	if err != nil {
 		// TODO: improve error logging
 		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
@@ -54,9 +54,9 @@ func (p Processor) Extract(url string) (map[string]int, error) {
 	}
 
 	// parsing & mining steps
-	parsedc := Parse(filesc)
-	files := Merge(parsedc)
-	miningResults := Mine(files, p.config.Miner)
+	parsedc := parse(filesc)
+	files := merge(parsedc)
+	miningResults := mine(files, p.config.Miner)
 
 	return miningResults.Results(), nil
 }

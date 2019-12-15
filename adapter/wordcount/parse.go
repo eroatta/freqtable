@@ -5,9 +5,9 @@ import (
 	"go/token"
 )
 
-// Parse parses a file and creates an Abstract Syntax Tree (AST) representation.
+// parse parses a file and creates an Abstract Syntax Tree (AST) representation.
 // It handles and returns a channel of code.File elements.
-func Parse(filesc <-chan File) chan File {
+func parse(filesc <-chan File) chan File {
 	fset := token.NewFileSet()
 
 	parsedc := make(chan File)
@@ -27,8 +27,8 @@ func Parse(filesc <-chan File) chan File {
 	return parsedc
 }
 
-// Merge joins files when necessary.
-func Merge(parsedc <-chan File) []File {
+// merge joins files when necessary.
+func merge(parsedc <-chan File) []File {
 	files := make([]File, 0)
 	for file := range parsedc {
 		files = append(files, file)

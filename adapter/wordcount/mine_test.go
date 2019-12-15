@@ -1,4 +1,4 @@
-package wordcount_test
+package wordcount
 
 import (
 	"go/ast"
@@ -6,12 +6,11 @@ import (
 	"go/token"
 	"testing"
 
-	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMine_OnNoFiles_ShouldReturnMinersWithoutResults(t *testing.T) {
-	processed := wordcount.Mine([]wordcount.File{}, &miner{name: "empty"})
+	processed := mine([]File{}, &miner{name: "empty"})
 	emptyMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)
@@ -20,7 +19,7 @@ func TestMine_OnNoFiles_ShouldReturnMinersWithoutResults(t *testing.T) {
 }
 
 func TestMine_OnFileWithNilAST_ShouldReturnMinersWithoutResults(t *testing.T) {
-	processed := wordcount.Mine([]wordcount.File{{Name: "main.go"}}, &miner{name: "empty"})
+	processed := mine([]File{{Name: "main.go"}}, &miner{name: "empty"})
 	emptyMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)
@@ -52,21 +51,21 @@ func TestMine_OnTwoMiners_ShouldReturnResultsBothMiners(t *testing.T) {
 	testFileset := token.NewFileSet()
 
 	ast1, _ := parser.ParseFile(testFileset, "main.go", `package main`, parser.AllErrors)
-	file1 := wordcount.File{
+	file1 := File{
 		Name:    "main.go",
 		AST:     ast1,
 		FileSet: testFileset,
 	}
 
 	ast2, _ := parser.ParseFile(testFileset, "test.go", `package test`, parser.AllErrors)
-	file2 := wordcount.File{
+	file2 := File{
 		Name:    "test.go",
 		AST:     ast2,
 		FileSet: testFileset,
 	}
 
 	testMiner := &miner{name: "first"}
-	processed := wordcount.Mine([]wordcount.File{file1, file2}, testMiner)
+	processed := mine([]File{file1, file2}, testMiner)
 	firstMiner, ok := processed.(*miner)
 
 	assert.True(t, ok)
