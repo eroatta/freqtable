@@ -14,8 +14,6 @@ import (
 type CreateFrequencyTableUsecase interface {
 	// Create creates a single frequency table.
 	Create(ctx context.Context, url string) (entity.FrequencyTable, error)
-	// CreateMultiple creates several frequency tables.
-	CreateMultiple(ctx context.Context, urls []string) ([]entity.FrequencyTable, error)
 }
 
 // NewCreateFrequencyTableUsecase initializes a new CreateFrequencyTableUsecase handler

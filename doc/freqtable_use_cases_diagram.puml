@@ -13,5 +13,6 @@ User --> Extract
 User --> ExtractMulti
 ExtractMulti .> Extract : extends
 User --> Merge
+note right of ExtractMulti : Not implemented
 
 @@enduml
