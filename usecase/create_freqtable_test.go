@@ -40,8 +40,6 @@ func TestCreate_OnCreateFrequencyTableUsecase_ShouldCreateFrequencyTable(t *test
 	assert.Equal(t, 2, len(ft.Values))
 	assert.Equal(t, 2, ft.Values["frequency"])
 	assert.Equal(t, 3, ft.Values["table"])
-	assert.NoError(t, ft.Error)
-	assert.Equal(t, "valid", ft.Status())
 }
 
 func TestCreate_OnCreateFrequencyTableUsecase_WhenErrorCounting_ShouldReturnError(t *testing.T) {
@@ -55,10 +53,7 @@ func TestCreate_OnCreateFrequencyTableUsecase_WhenErrorCounting_ShouldReturnErro
 
 	assert.NotNil(t, ft)
 	assert.EqualError(t, err, "error while extracting")
-	assert.Equal(t, "60cc02e02b67414b493033995baf772f", ft.ID)
-	assert.Equal(t, 0, len(ft.Values))
-	assert.EqualError(t, ft.Error, "error while extracting")
-	assert.Equal(t, "invalid", ft.Status())
+	assert.Equal(t, entity.FrequencyTable{}, ft)
 }
 
 func TestCreate_OnCreateFrequencyTableUsecase_WhenSavingResults_ShouldReturnError(t *testing.T) {
@@ -81,12 +76,7 @@ func TestCreate_OnCreateFrequencyTableUsecase_WhenSavingResults_ShouldReturnErro
 
 	assert.NotNil(t, ft)
 	assert.EqualError(t, err, "error while persisting")
-	assert.Equal(t, "60cc02e02b67414b493033995baf772f", ft.ID)
-	assert.Equal(t, 2, len(ft.Values))
-	assert.Equal(t, 2, ft.Values["frequency"])
-	assert.Equal(t, 3, ft.Values["table"])
-	assert.EqualError(t, ft.Error, "error while persisting")
-	assert.Equal(t, "invalid", ft.Status())
+	assert.Equal(t, entity.FrequencyTable{}, ft)
 }
 
 type testWordCountRepository struct {

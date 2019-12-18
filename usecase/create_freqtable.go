@@ -40,17 +40,13 @@ func (uc createFrequencyTableUsecase) Create(ctx context.Context, url string) (e
 
 	values, err := uc.wcr.Extract(url)
 	if err != nil {
-		// TODO: log
-		ft.Error = err
-		return ft, err // TODO: should we send and error on this cases?
+		return entity.FrequencyTable{}, err
 	}
 	ft.Values = values
 
 	err = uc.ftr.Save(ctx, ft)
 	if err != nil {
-		// TODO: log
-		ft.Error = err
-		return ft, err
+		return entity.FrequencyTable{}, err
 	}
 
 	return ft, nil

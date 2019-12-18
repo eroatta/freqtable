@@ -4,9 +4,7 @@ together {
     package entity {
         class entity.FrequencyTable {
             + ID : string
-            + Error : error
             + Values : map[string]int
-            + Status() string
         }
     }
 

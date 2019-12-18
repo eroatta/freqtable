@@ -30,7 +30,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	log.Println(fmt.Sprintf("Frequency Table - ID: %s - # Values: %d - Error: %v", ft.ID, len(ft.Values), ft.Error))
+	log.Println(fmt.Sprintf("Frequency Table - ID: %s - # Values: %d", ft.ID, len(ft.Values)))
 	for token, count := range ft.Values {
 		if len(token) == 1 {
 			continue
