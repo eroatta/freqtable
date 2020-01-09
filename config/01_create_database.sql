@@ -1,0 +1,3 @@
+-- DROP DATABASE IF EXISTS freqtable;
+CREATE DATABASE freqtable OWNER = postgres
+	ENCODING = 'UTF8' TABLESPACE = pg_default CONNECTION LIMIT = -1; 

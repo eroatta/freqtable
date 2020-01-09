@@ -2,8 +2,7 @@ package usecase
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
+	"time"
 
 	"github.com/eroatta/freqtable/entity"
 	"github.com/eroatta/freqtable/repository"
@@ -33,7 +32,8 @@ type createFrequencyTableUsecase struct {
 // Create creates a new entity.FrequencyTable from the given URL.
 func (uc createFrequencyTableUsecase) Create(ctx context.Context, url string) (entity.FrequencyTable, error) {
 	ft := entity.FrequencyTable{
-		ID: fmt.Sprintf("%x", md5.Sum([]byte(url))),
+		Name:        url,
+		DateCreated: time.Now(),
 	}
 
 	values, err := uc.wcr.Extract(url)
@@ -42,10 +42,11 @@ func (uc createFrequencyTableUsecase) Create(ctx context.Context, url string) (e
 	}
 	ft.Values = values
 
-	err = uc.ftr.Save(ctx, ft)
+	id, err := uc.ftr.Save(ctx, ft)
 	if err != nil {
 		return entity.FrequencyTable{}, err
 	}
+	ft.ID = id
 
 	return ft, nil
 }

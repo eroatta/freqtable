@@ -1,0 +1,24 @@
+@@startuml Freqtable Database Schema
+
+entity frequency_table {
+    *id : serial <<PK>>
+    --
+    *name :string <<unique>>
+    *date_created : timestamp
+    *last_updated : timestamp
+}
+
+entity word {
+    *frequency_table_id : number <<FK>>
+    --
+    *word : string
+    *times : number
+}
+
+note right of word
+    PK = frequency_table_id + word
+end note
+
+frequency_table ||--o{ word
+
+@@enduml

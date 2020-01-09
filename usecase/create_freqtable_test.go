@@ -28,6 +28,7 @@ func TestCreate_OnCreateFrequencyTableUsecase_ShouldCreateFrequencyTable(t *test
 	}
 
 	ftr := testFrequencyTableRepository{
+		id:  1234567890,
 		err: nil,
 	}
 
@@ -36,7 +37,9 @@ func TestCreate_OnCreateFrequencyTableUsecase_ShouldCreateFrequencyTable(t *test
 
 	assert.NotNil(t, ft)
 	assert.NoError(t, err)
-	assert.Equal(t, "60cc02e02b67414b493033995baf772f", ft.ID)
+	assert.Equal(t, int64(1234567890), ft.ID)
+	assert.Equal(t, "https://github.com/eroatta/freqtable", ft.Name)
+	// TODO: add validations for date
 	assert.Equal(t, 2, len(ft.Values))
 	assert.Equal(t, 2, ft.Values["frequency"])
 	assert.Equal(t, 3, ft.Values["table"])
@@ -94,13 +97,14 @@ func (twc testWordCountRepository) Extract(url string) (map[string]int, error) {
 
 type testFrequencyTableRepository struct {
 	frequencyTable entity.FrequencyTable
+	id             int64
 	err            error
 }
 
-func (tft testFrequencyTableRepository) Get(ctx context.Context, ID string) (entity.FrequencyTable, error) {
+func (tft testFrequencyTableRepository) Get(ctx context.Context, id int64) (entity.FrequencyTable, error) {
 	return tft.frequencyTable, tft.err
 }
 
-func (tft testFrequencyTableRepository) Save(ctx context.Context, ft entity.FrequencyTable) error {
-	return tft.err
+func (tft testFrequencyTableRepository) Save(ctx context.Context, ft entity.FrequencyTable) (int64, error) {
+	return tft.id, tft.err
 }
