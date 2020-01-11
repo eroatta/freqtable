@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"database/sql"
 
@@ -80,24 +79,51 @@ func (r *relational) Save(ctx context.Context, ft entity.FrequencyTable) (int64,
 }
 
 func (r *relational) Get(ctx context.Context, ID int64) (entity.FrequencyTable, error) {
-	//query := "SELECT id, \"name\", date_created, last_updated FROM frequency_table WHERE id=$1"
-	// TODO: use prepared statements...
-	query := "SELECT id FROM frequency_table WHERE id=$1"
-	var frequencyTable entity.FrequencyTable
+	query := "SELECT id, \"name\", date_created, last_updated FROM frequency_table WHERE id=$1"
+	ftGetStmt, err := r.db.PrepareContext(ctx, query)
+	if err != nil {
+		log.WithError(err).Error("error preparing frequency_table select statement")
+		return entity.FrequencyTable{}, ErrUnexpected
+	}
 
-	row := r.db.QueryRowContext(ctx, query, ID)
-	switch err := row.Scan(&frequencyTable.ID); err {
+	var frequencyTable entity.FrequencyTable
+	row := ftGetStmt.QueryRowContext(ctx, ID)
+	switch err := row.Scan(&frequencyTable.ID,
+		&frequencyTable.Name,
+		&frequencyTable.DateCreated,
+		&frequencyTable.LastUpdated); err {
 	case sql.ErrNoRows:
 		return entity.FrequencyTable{}, ErrNoResults
 	case nil:
 		// continue
 	default:
-		// TODO: change log level
-		log.Println(fmt.Sprintf("Error executing query '%s': %v", query, err))
+		log.WithError(err).Error("error executing select on frequency_table")
 		return entity.FrequencyTable{}, ErrUnexpected
 	}
 
-	// TODO: add query for values...
+	itemsQuery := "SELECT word, times FROM frequency_table_item WHERE frequency_table_id=$1"
+	itemsSelectStmt, err := r.db.PrepareContext(ctx, itemsQuery)
+	if err != nil {
+		log.WithError(err).Error("error preparing frequency_table_item select statement")
+		return entity.FrequencyTable{}, ErrUnexpected
+	}
+
+	rows, err := itemsSelectStmt.QueryContext(ctx, frequencyTable.ID)
+	if err != nil {
+		log.WithError(err).Error("error executing select on frequency_table_item")
+	}
+	defer rows.Close()
+
+	frequencyTable.Values = make(map[string]int)
+	for rows.Next() {
+		var word string
+		var times int
+		if err := rows.Scan(&word, &times); err != nil {
+			log.WithError(err).Error("error scanning row results")
+			return entity.FrequencyTable{}, ErrUnexpected
+		}
+		frequencyTable.Values[word] = times
+	}
 
 	return frequencyTable, nil
 }
