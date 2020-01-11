@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"database/sql"
 
 	"github.com/eroatta/freqtable/entity"
 	"github.com/eroatta/freqtable/repository"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -36,50 +37,41 @@ func (r *relational) Save(ctx context.Context, ft entity.FrequencyTable) (int64,
 
 	tx, err := r.db.Begin()
 	if err != nil {
-		// TODO: change log level
-		log.Println(fmt.Sprintf("Error beginning a transaction: %v", err))
+		log.WithField("error", err).Error("error beginning a transaction")
 		return 0, ErrUnexpected
 	}
 
 	ftStmt, err := tx.PrepareContext(ctx,
 		"INSERT INTO frequency_table(name, date_created) VALUES($1, $2) RETURNING id")
 	if err != nil {
-		// TODO: change log level
-		log.Println(fmt.Sprintf("Error preparing statement 'INSERT INTO': %v", err))
+		log.WithField("error", err).Error("error preparing statement for frequency_table insertion")
 		return 0, ErrUnexpected
 	}
 
 	var id int64
 	err = ftStmt.QueryRowContext(ctx, ft.Name, ft.DateCreated).Scan(&id)
 	if err != nil {
-		// TODO: change log level
-		log.Println(fmt.Sprintf("Error executing statement 'INSERT INTO frequency_table': %v", err))
+		log.WithField("error", err).Error("error inserting new frequency_table record")
 		return 0, ErrUnexpected
 	}
 
 	stmt, err := tx.PrepareContext(ctx,
 		"INSERT INTO frequency_table_item(frequency_table_id, word, times) VALUES ($1, $2, $3)")
 	if err != nil {
-		// TODO: change log level
-		log.Println(fmt.Sprintf("Error preparing statement 'INSERT INTO': %v", err))
+		log.WithField("error", err).Error("error preparing statement for frequency_table_item insertion")
 		return 0, ErrUnexpected
 	}
 
 	for word, times := range ft.Values {
 		if _, err = stmt.ExecContext(ctx, id, word, times); err != nil {
-			// TODO: change log level
+			log.WithField("error", err).Error("error inserting new frequency_table_item record")
 			defer tx.Rollback()
 			return 0, ErrUnexpected
 		}
 	}
 
-	if err = stmt.Close(); err != nil {
-		// TODO: change log level
-		return 0, ErrUnexpected
-	}
-
 	if err = tx.Commit(); err != nil {
-		// TODO: change log level
+		log.WithField("error", err).Error("error commiting a transaction")
 		defer tx.Rollback()
 		return 0, ErrUnexpected
 	}
