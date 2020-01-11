@@ -3,7 +3,8 @@ package wordcount
 import (
 	"errors"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -27,7 +28,7 @@ func (p Processor) Extract(url string) (map[string]int, error) {
 	// cloning step
 	_, filesc, err := clone(url, p.config.Cloner)
 	if err != nil {
-		log.Println(fmt.Sprintf("Error reading repository %s: %v", url, err))
+		log.WithError(err).Error(fmt.Sprintf("error reading repository %s", url))
 		return nil, ErrCloningRepository
 	}
 
@@ -36,7 +37,7 @@ func (p Processor) Extract(url string) (map[string]int, error) {
 	files := merge(parsedc)
 	for _, file := range files {
 		if file.Error != nil {
-			log.Println(fmt.Sprintf("Error when trying to parse file %s: %v", file.Name, file.Error))
+			log.WithError(file.Error).Error(fmt.Sprintf("error when trying to parse file %s", file.Name))
 			return nil, ErrParsingFile
 		}
 	}

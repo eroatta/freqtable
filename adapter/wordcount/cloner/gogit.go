@@ -1,9 +1,8 @@
 package cloner
 
 import (
-	"log"
-
 	"github.com/eroatta/freqtable/adapter/wordcount"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-billy.v4"
 	"gopkg.in/src-d/go-billy.v4/memfs"
 	"gopkg.in/src-d/go-git.v4"
@@ -37,7 +36,7 @@ func goGitClonerFunc(url string) (*git.Repository, error) {
 }
 
 func (c *goGitCloner) Clone(url string) (wordcount.Repository, error) {
-	log.Println("Cloning repository...")
+	log.WithField("repository", url).Info("cloning repository")
 	repository, err := c.clonerFunc(url)
 	if err != nil {
 		return wordcount.Repository{}, err

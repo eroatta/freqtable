@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/lib/pq"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
 	"github.com/eroatta/freqtable/usecase"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -39,13 +39,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	log.Println(fmt.Sprintf("Frequency Table - ID: %d - Name: %s - # Values: %d", ft.ID, ft.Name, len(ft.Values)))
+	log.Info(fmt.Sprintf("Frequency Table - ID: %d - Name: %s - # Values: %d", ft.ID, ft.Name, len(ft.Values)))
 	for token, count := range ft.Values {
 		if len(token) == 1 {
 			continue
 		}
 
-		log.Println(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
+		log.Info(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
 	}
 }
 
@@ -55,13 +55,12 @@ func newPostgresDB(host string, port int, user string, password string, dbname s
 
 	db, err := sql.Open("postgres", connInfo)
 	if err != nil {
-		log.Fatalln(fmt.Sprintf("Error opening connection - %s -: %v", connInfo, err))
+		log.WithError(err).Fatal(fmt.Sprintf("error opening connection - %s", connInfo))
 		return nil, err
 	}
-	// defer db.Close()
 
 	if err = db.Ping(); err != nil {
-		log.Fatalln(fmt.Sprintf("Error pinging remote server: %v", err))
+		log.WithError(err).Fatal(fmt.Sprintf("error pinging remote server"))
 		return nil, err
 	}
 
