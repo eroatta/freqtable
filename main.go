@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 
 	"github.com/eroatta/freqtable/adapter/persistence"
+	"github.com/eroatta/freqtable/adapter/rest"
 	"github.com/eroatta/freqtable/adapter/wordcount"
 	"github.com/eroatta/freqtable/adapter/wordcount/cloner"
 	"github.com/eroatta/freqtable/adapter/wordcount/miner"
@@ -16,6 +18,11 @@ import (
 )
 
 func main() {
+	r := gin.Default()
+	r.GET("/ping", rest.PingHandler)
+	r.POST("/frequency-tables", rest.PostFrequencyTable)
+	r.Run()
+
 	config := wordcount.ProcessorConfig{
 		Cloner: cloner.New(),
 		Miner:  miner.NewCount(),
