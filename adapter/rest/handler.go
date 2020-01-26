@@ -1,9 +1,13 @@
 package rest
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/eroatta/token/conserv"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,7 +26,7 @@ func PingHandler(c *gin.Context) {
 }
 
 type postFrequencyTableCommand struct {
-	Repository string `json:"repository" binding:"required"`
+	Repository string `json:"repository" validate:"url"`
 }
 
 type freqTableResponse struct {
@@ -38,10 +42,12 @@ type errorResponse struct {
 	Details []string `json:"details"`
 }
 
+var validate = validator.New()
+
 func PostFrequencyTable(ctx *gin.Context) {
 	var cmd postFrequencyTableCommand
 
-	if err := ctx.BindJSON(&cmd); err != nil {
+	if err := ctx.ShouldBindJSON(&cmd); err != nil {
 		log.WithError(err).Debug("failed to bind JSON body")
 		errResponse := errorResponse{
 			Name:    "validation_error",
@@ -49,6 +55,28 @@ func PostFrequencyTable(ctx *gin.Context) {
 			Details: []string{
 				err.Error(),
 			},
+		}
+		ctx.JSON(400, errResponse)
+		return
+	}
+
+	err := validate.Struct(cmd)
+	if err != nil {
+		errResponse := errorResponse{
+			Name:    "validation_error",
+			Message: "missing or invalid data",
+			Details: make([]string, 0),
+		}
+		for _, err := range err.(validator.ValidationErrors) {
+			field := strings.ToLower(strings.Join(conserv.Split(err.Field()), "_"))
+			var value interface{}
+			if val, ok := err.Value().(string); ok && val == "" {
+				value = "null or empty"
+			} else {
+				value = err.Value()
+			}
+			errResponse.Details = append(errResponse.Details,
+				fmt.Sprintf("invalid field '%s' with value %v", field, value))
 		}
 		ctx.JSON(400, errResponse)
 		return

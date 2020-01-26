@@ -6,9 +6,9 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3
 	github.com/eroatta/token v0.0.0-20190815135418-c41c76e47cf5
 	github.com/gin-gonic/gin v1.5.0
-	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-playground/validator/v10 v10.1.0
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-isatty v0.0.11 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

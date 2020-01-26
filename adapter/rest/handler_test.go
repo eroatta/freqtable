@@ -52,7 +52,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithEmptyBody_ShouldReturnHTTP400(
 	}
 	assert.Equal(t, "validation_error", response["name"])
 	assert.Equal(t, "missing or invalid data", response["message"])
-	assert.Equal(t, "Key: 'postFrequencyTableCommand.Repository' Error:Field validation for 'Repository' failed on the 'required' tag", response["details"].([]interface{})[0].(string))
+	assert.Equal(t, "invalid field 'repository' with value null or empty", response["details"].([]interface{})[0].(string))
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithWrongDataType_ShouldReturnHTTP400(t *testing.T) {
@@ -80,7 +80,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithInvalidRepository_ShouldReturn
 
 	w := httptest.NewRecorder()
 	body := `{
-		"repository": "https://github...com/eroatta/freqtable"
+		"repository": "./github.com/eroatta/freqtable"
 	}`
 	req, _ := http.NewRequest("POST", "/frequency-tables", strings.NewReader(body))
 	router.ServeHTTP(w, req)
@@ -92,7 +92,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithInvalidRepository_ShouldReturn
 	}
 	assert.Equal(t, "validation_error", response["name"])
 	assert.Equal(t, "missing or invalid data", response["message"])
-	assert.Equal(t, "json: cannot unmarshal number into Go struct field postFrequencyTableCommand.repository of type string", response["details"].([]interface{})[0].(string))
+	assert.Equal(t, "invalid field 'repository' with value ./github.com/eroatta/freqtable", response["details"].([]interface{})[0].(string))
 }
 
 // POST with invalid github URL should return 400 Bad Request
