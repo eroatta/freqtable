@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 
@@ -18,17 +17,12 @@ import (
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", rest.PingHandler)
-	r.POST("/frequency-tables", rest.PostFrequencyTable)
-	r.Run()
-
 	config := wordcount.ProcessorConfig{
 		Cloner: cloner.New(),
 		Miner:  miner.NewCount(),
 	}
 
-	url := "https://github.com/src-d/go-siva"
+	//url := "https://github.com/src-d/go-siva"
 	processor := wordcount.NewProcessor(config)
 	//storage := persistence.NewInMemory()
 	db, err := newPostgresDB("localhost", 5432, "postgres", "postgres", "freqtable")
@@ -40,20 +34,27 @@ func main() {
 
 	createFreqTableUC := usecase.NewCreateFrequencyTableUsecase(processor, storage)
 
-	ctx := context.Background()
+	r := gin.Default()
+	server := rest.NewServer(createFreqTableUC)
+	r.GET("/ping", rest.PingHandler)
+	r.POST("/frequency-tables", server.PostFrequencyTable)
+	r.Run()
+
+	/*ctx := context.Background()
 	ft, err := createFreqTableUC.Create(ctx, url)
 	if err != nil {
 		log.Fatalln(err)
-	}
+	}*/
 
-	log.Info(fmt.Sprintf("Frequency Table - ID: %d - Name: %s - # Values: %d", ft.ID, ft.Name, len(ft.Values)))
-	for token, count := range ft.Values {
-		if len(token) == 1 {
-			continue
-		}
+	/*
+		log.Info(fmt.Sprintf("Frequency Table - ID: %d - Name: %s - # Values: %d", ft.ID, ft.Name, len(ft.Values)))
+		for token, count := range ft.Values {
+			if len(token) == 1 {
+				continue
+			}
 
-		log.Info(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
-	}
+			log.Info(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
+		}*/
 }
 
 func newPostgresDB(host string, port int, user string, password string, dbname string) (*sql.DB, error) {

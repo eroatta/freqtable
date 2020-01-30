@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eroatta/freqtable/usecase"
 	"github.com/eroatta/token/conserv"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
@@ -12,11 +13,18 @@ import (
 )
 
 type Server interface {
-	Run()
+	//Run()
+	PostFrequencyTable(ctx *gin.Context)
 }
 
-func NewServer() Server {
-	return nil
+func NewServer(ftUsecase usecase.CreateFrequencyTableUsecase) Server {
+	return server{
+		createFreqTableUseCase: ftUsecase,
+	}
+}
+
+type server struct {
+	createFreqTableUseCase usecase.CreateFrequencyTableUsecase
 }
 
 func PingHandler(c *gin.Context) {
@@ -30,10 +38,10 @@ type postFrequencyTableCommand struct {
 }
 
 type freqTableResponse struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	DateCreated time.Time `json:"date_created"`
-	LastUpdated time.Time `json:"last_update,omitempty"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	DateCreated string `json:"date_created"`
+	LastUpdated string `json:"last_updated,omitempty"`
 }
 
 type errorResponse struct {
@@ -44,7 +52,7 @@ type errorResponse struct {
 
 var validate = validator.New()
 
-func PostFrequencyTable(ctx *gin.Context) {
+func (s server) PostFrequencyTable(ctx *gin.Context) {
 	var cmd postFrequencyTableCommand
 
 	if err := ctx.ShouldBindJSON(&cmd); err != nil {
@@ -82,11 +90,22 @@ func PostFrequencyTable(ctx *gin.Context) {
 		return
 	}
 
+	ft, err := s.createFreqTableUseCase.Create(ctx, cmd.Repository)
+	if err != nil {
+		errResponse := errorResponse{
+			Name:    "internal_error",
+			Message: "internal server error",
+			Details: []string{err.Error()},
+		}
+		ctx.JSON(500, errResponse)
+		return
+	}
+
 	resp := freqTableResponse{
-		ID:          1,
-		Name:        cmd.Repository,
-		DateCreated: time.Now(),
-		LastUpdated: time.Time{},
+		ID:          ft.ID,
+		Name:        ft.Name,
+		DateCreated: ft.DateCreated.Format(time.RFC3339),
+		LastUpdated: ft.LastUpdated.Format(time.RFC3339),
 	}
 	ctx.JSON(201, resp)
 }
