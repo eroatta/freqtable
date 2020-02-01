@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 
 	"github.com/eroatta/freqtable/adapter/persistence"
@@ -34,27 +33,8 @@ func main() {
 
 	createFreqTableUC := usecase.NewCreateFrequencyTableUsecase(processor, storage)
 
-	r := gin.Default()
-	server := rest.NewServer(createFreqTableUC)
-	r.GET("/ping", rest.PingHandler)
-	r.POST("/frequency-tables", server.PostFrequencyTable)
+	r := rest.NewServer(createFreqTableUC)
 	r.Run()
-
-	/*ctx := context.Background()
-	ft, err := createFreqTableUC.Create(ctx, url)
-	if err != nil {
-		log.Fatalln(err)
-	}*/
-
-	/*
-		log.Info(fmt.Sprintf("Frequency Table - ID: %d - Name: %s - # Values: %d", ft.ID, ft.Name, len(ft.Values)))
-		for token, count := range ft.Values {
-			if len(token) == 1 {
-				continue
-			}
-
-			log.Info(fmt.Sprintf("Repository: %s - Word: %s - Count: %d", url, token, count))
-		}*/
 }
 
 func newPostgresDB(host string, port int, user string, password string, dbname string) (*sql.DB, error) {

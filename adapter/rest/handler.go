@@ -13,22 +13,28 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Server interface {
-	//Run()
-	PostFrequencyTable(ctx *gin.Context)
-}
+// requestValidator represents a validator capable of analyzing the values of the incoming
+// request bodies.
+var requestValidator = validator.New()
 
-func NewServer(ftUsecase usecase.CreateFrequencyTableUsecase) Server {
-	return server{
+// NewServer creates a new gingonic Engine that handles HTTP requests.
+func NewServer(ftUsecase usecase.CreateFrequencyTableUsecase) *gin.Engine {
+	internal := server{
 		createFreqTableUseCase: ftUsecase,
 	}
+
+	r := gin.Default()
+	r.GET("/ping", pingHandler)
+	r.POST("/frequency-tables", internal.postFrequencyTable)
+
+	return r
 }
 
 type server struct {
 	createFreqTableUseCase usecase.CreateFrequencyTableUsecase
 }
 
-func PingHandler(c *gin.Context) {
+func pingHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "pong",
 	})
@@ -51,9 +57,7 @@ type errorResponse struct {
 	Details []string `json:"details"`
 }
 
-var validate = validator.New()
-
-func (s server) PostFrequencyTable(ctx *gin.Context) {
+func (s server) postFrequencyTable(ctx *gin.Context) {
 	var cmd postFrequencyTableCommand
 
 	if err := ctx.ShouldBindJSON(&cmd); err != nil {
@@ -62,7 +66,7 @@ func (s server) PostFrequencyTable(ctx *gin.Context) {
 		return
 	}
 
-	if err := validate.Struct(cmd); err != nil {
+	if err := requestValidator.Struct(cmd); err != nil {
 		log.WithError(err).Debug("failed while validating the command")
 		setBadRequestOnValidationResponse(ctx, err)
 		return

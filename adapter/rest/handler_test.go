@@ -14,20 +14,11 @@ import (
 
 	"github.com/eroatta/freqtable/adapter/rest"
 	"github.com/eroatta/freqtable/entity"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupRouter() *gin.Engine {
-	router := gin.Default()
-	server := rest.NewServer(nil)
-	router.POST("/frequency-tables", server.PostFrequencyTable)
-
-	return router
-}
-
 func TestPOST_OnFrequencyTableCreationHandler_WithoutBody_ShouldReturnHTTP400(t *testing.T) {
-	router := setupRouter()
+	router := rest.NewServer(nil)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/frequency-tables", nil)
@@ -44,7 +35,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithoutBody_ShouldReturnHTTP400(t 
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithEmptyBody_ShouldReturnHTTP400(t *testing.T) {
-	router := setupRouter()
+	router := rest.NewServer(nil)
 
 	w := httptest.NewRecorder()
 	body := `{}`
@@ -62,7 +53,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithEmptyBody_ShouldReturnHTTP400(
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithWrongDataType_ShouldReturnHTTP400(t *testing.T) {
-	router := setupRouter()
+	router := rest.NewServer(nil)
 
 	w := httptest.NewRecorder()
 	body := `{
@@ -82,7 +73,7 @@ func TestPOST_OnFrequencyTableCreationHandler_WithWrongDataType_ShouldReturnHTTP
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithInvalidRepository_ShouldReturnHTTP400(t *testing.T) {
-	router := setupRouter()
+	router := rest.NewServer(nil)
 
 	w := httptest.NewRecorder()
 	body := `{
@@ -102,14 +93,10 @@ func TestPOST_OnFrequencyTableCreationHandler_WithInvalidRepository_ShouldReturn
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithInternalError_ShouldReturnHTTP500(t *testing.T) {
-	//router := setupRouter()
-	server := rest.NewServer(mockUsecase{
+	router := rest.NewServer(mockUsecase{
 		ft:  entity.FrequencyTable{},
 		err: errors.New("error cloning repository http://github.com/eroatta/freqtable"),
 	})
-
-	router := gin.Default()
-	router.POST("/frequency-tables", server.PostFrequencyTable)
 
 	w := httptest.NewRecorder()
 	body := `{
@@ -129,7 +116,6 @@ func TestPOST_OnFrequencyTableCreationHandler_WithInternalError_ShouldReturnHTTP
 }
 
 func TestPOST_OnFrequencyTableCreationHandler_WithSuccess_ShouldReturnHTTP201(t *testing.T) {
-	//router := setupRouter()
 	now := time.Now()
 	ft := entity.FrequencyTable{
 		ID:          int64(123112312),
@@ -138,13 +124,10 @@ func TestPOST_OnFrequencyTableCreationHandler_WithSuccess_ShouldReturnHTTP201(t 
 		LastUpdated: now,
 	}
 
-	server := rest.NewServer(mockUsecase{
+	router := rest.NewServer(mockUsecase{
 		ft:  ft,
 		err: nil,
 	})
-
-	router := gin.Default()
-	router.POST("/frequency-tables", server.PostFrequencyTable)
 
 	w := httptest.NewRecorder()
 	body := `{
@@ -173,5 +156,3 @@ type mockUsecase struct {
 func (m mockUsecase) Create(ctx context.Context, url string) (entity.FrequencyTable, error) {
 	return m.ft, m.err
 }
-
-// POST with valid parameters and successful execution should return 201 Created and the FT info
