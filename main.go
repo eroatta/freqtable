@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"os"
 
 	"github.com/eroatta/freqtable/adapter/persistence"
 	"github.com/eroatta/freqtable/adapter/rest"
@@ -21,7 +23,12 @@ func main() {
 	processor := wordcount.NewProcessor(config)
 
 	// storage configuration
-	conn, deferrable, err := persistence.NewConnection("localhost", 5432, "postgres", "postgres", "freqtable")
+	if err := godotenv.Load(); err != nil {
+		log.WithError(err).Fatal("Error while loading the env configuration.")
+	}
+
+	conn, deferrable, err := persistence.NewConnection(os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 	if err != nil {
 		log.Fatalln(err)
 	}

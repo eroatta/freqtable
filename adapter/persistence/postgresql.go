@@ -35,8 +35,8 @@ func NewPostgreSQL(conn *sql.DB) repository.FrequencyTableRepository {
 
 // NewConnection opens a connection between the application and the database and checks its validity.
 // It returns the connection, a deferrable operation and error if present.
-func NewConnection(host string, port int, user string, password string, dbname string) (*sql.DB, func(), error) {
-	connInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+func NewConnection(host string, port string, user string, password string, dbname string) (*sql.DB, func(), error) {
+	connInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
 
 	db, err := sql.Open("postgres", connInfo)
