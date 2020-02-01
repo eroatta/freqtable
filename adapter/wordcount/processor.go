@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	// ErrCloningRepository indicates that an error occured while retrieving the remote Github.com repository.
+	// ErrCloningRepository indicates that an error occurred while retrieving the remote Github.com repository.
 	ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
 	// ErrParsingFile indicates an error while converting the source code to its Abstract Syntax Tree representation.
 	ErrParsingFile = errors.New("Error while parsing source code to AST")
