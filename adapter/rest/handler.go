@@ -2,6 +2,7 @@ package rest
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -57,55 +58,70 @@ func (s server) PostFrequencyTable(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&cmd); err != nil {
 		log.WithError(err).Debug("failed to bind JSON body")
-		errResponse := errorResponse{
-			Name:    "validation_error",
-			Message: "missing or invalid data",
-			Details: []string{
-				err.Error(),
-			},
-		}
-		ctx.JSON(400, errResponse)
+		setBadRequestOnBindingResponse(ctx, err)
 		return
 	}
 
-	err := validate.Struct(cmd)
-	if err != nil {
-		errResponse := errorResponse{
-			Name:    "validation_error",
-			Message: "missing or invalid data",
-			Details: make([]string, 0),
-		}
-		for _, err := range err.(validator.ValidationErrors) {
-			field := strings.ToLower(strings.Join(conserv.Split(err.Field()), "_"))
-			var value interface{}
-			if val, ok := err.Value().(string); ok && val == "" {
-				value = "null or empty"
-			} else {
-				value = err.Value()
-			}
-			errResponse.Details = append(errResponse.Details,
-				fmt.Sprintf("invalid field '%s' with value %v", field, value))
-		}
-		ctx.JSON(400, errResponse)
+	if err := validate.Struct(cmd); err != nil {
+		log.WithError(err).Debug("failed while validating the command")
+		setBadRequestOnValidationResponse(ctx, err)
 		return
 	}
 
 	ft, err := s.createFreqTableUseCase.Create(ctx, cmd.Repository)
 	if err != nil {
-		errResponse := errorResponse{
-			Name:    "internal_error",
-			Message: "internal server error",
-			Details: []string{err.Error()},
-		}
-		ctx.JSON(500, errResponse)
+		log.WithError(err).Error("unexpected error")
+		setInternalErrorResponse(ctx, err)
 		return
 	}
 
-	resp := freqTableResponse{
+	response := freqTableResponse{
 		ID:          ft.ID,
 		Name:        ft.Name,
 		DateCreated: ft.DateCreated.Format(time.RFC3339),
 		LastUpdated: ft.LastUpdated.Format(time.RFC3339),
 	}
-	ctx.JSON(201, resp)
+	ctx.JSON(http.StatusCreated, response)
+}
+
+func newBadRequestResponse() errorResponse {
+	return errorResponse{
+		Name:    "validation_error",
+		Message: "missing or invalid data",
+		Details: make([]string, 0),
+	}
+}
+
+func setBadRequestOnBindingResponse(ctx *gin.Context, err error) {
+	errResponse := newBadRequestResponse()
+	errResponse.Details = append(errResponse.Details, err.Error())
+
+	ctx.JSON(http.StatusBadRequest, errResponse)
+}
+
+func setBadRequestOnValidationResponse(ctx *gin.Context, err error) {
+	errResponse := newBadRequestResponse()
+	for _, err := range err.(validator.ValidationErrors) {
+		field := strings.ToLower(strings.Join(conserv.Split(err.Field()), "_"))
+		var value interface{}
+		if val, ok := err.Value().(string); ok && val == "" {
+			value = "null or empty"
+		} else {
+			value = err.Value()
+		}
+		errResponse.Details = append(errResponse.Details,
+			fmt.Sprintf("invalid field '%s' with value %v", field, value))
+	}
+
+	ctx.JSON(http.StatusBadRequest, errResponse)
+}
+
+func setInternalErrorResponse(ctx *gin.Context, err error) {
+	errResponse := errorResponse{
+		Name:    "internal_error",
+		Message: "internal server error",
+		Details: []string{err.Error()},
+	}
+
+	ctx.JSON(http.StatusInternalServerError, errResponse)
 }
