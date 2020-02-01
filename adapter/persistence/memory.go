@@ -13,6 +13,7 @@ type memory struct {
 	elements map[int64]entity.FrequencyTable
 }
 
+// NewInMemory creates a new FrequencyTableRepository on memory.
 func NewInMemory() repository.FrequencyTableRepository {
 	return &memory{
 		elements: make(map[int64]entity.FrequencyTable),

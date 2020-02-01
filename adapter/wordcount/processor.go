@@ -8,8 +8,10 @@ import (
 )
 
 var (
+	// ErrCloningRepository indicates that an error occured while retrieving the remote Github.com repository.
 	ErrCloningRepository = errors.New("Error while reading/cloning remote repository")
-	ErrParsingFile       = errors.New("Error while parsing source code to AST")
+	// ErrParsingFile indicates an error while converting the source code to its Abstract Syntax Tree representation.
+	ErrParsingFile = errors.New("Error while parsing source code to AST")
 )
 
 // Processor handles the logic to extract the word count from a remote source code repository.
@@ -24,6 +26,7 @@ func NewProcessor(config ProcessorConfig) Processor {
 	}
 }
 
+// Extract explores the source code and applies the processor-defined miner.
 func (p Processor) Extract(url string) (map[string]int, error) {
 	// cloning step
 	_, filesc, err := clone(url, p.config.Cloner)

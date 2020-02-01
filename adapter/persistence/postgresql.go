@@ -14,8 +14,11 @@ import (
 )
 
 var (
-	ErrNoResults     = errors.New("No results for the given query")
-	ErrUnexpected    = errors.New("Unexpected error performing the current operation")
+	// ErrNoResults indicates that the given query has no results.
+	ErrNoResults = errors.New("No results for the given query")
+	// ErrUnexpected indicatates that the current operation couldn't be completed because of an internal issue.
+	ErrUnexpected = errors.New("Unexpected error performing the current operation")
+	// ErrMissingFields indicates that one or more required fields are missing.
 	ErrMissingFields = errors.New("Missing mandatory fields")
 )
 
@@ -91,7 +94,7 @@ func (r *postgresql) Save(ctx context.Context, ft entity.FrequencyTable) (int64,
 	}
 
 	if err = tx.Commit(); err != nil {
-		log.WithField("error", err).Error("error commiting a transaction")
+		log.WithField("error", err).Error("error committing a transaction")
 		defer tx.Rollback()
 		return 0, ErrUnexpected
 	}
