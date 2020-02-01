@@ -13,8 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewRelational_ShouldReturnNewFrequencyTableRepository(t *testing.T) {
-	ftr := persistence.NewRelational(nil)
+func TestNewPostgreSQL_ShouldReturnNewFrequencyTableRepository(t *testing.T) {
+	ftr := persistence.NewPostgreSQL(nil)
 
 	assert.NotNil(t, ftr)
 }
@@ -30,7 +30,7 @@ func TestGet_OnRelationalWhenSQLError_ShouldReturnError(t *testing.T) {
 		WithArgs(1234567890).
 		WillReturnError(errors.New("Connection refused"))
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 	ft, err := ftr.Get(context.TODO(), 1234567890)
 
 	assert.Empty(t, ft)
@@ -50,7 +50,7 @@ func TestGet_OnRelationalWhenNonExistingFrequencyTable_ShouldReturnError(t *test
 		WithArgs(1234567890).
 		WillReturnRows(rows)
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 	ft, err := ftr.Get(context.TODO(), 1234567890)
 
 	assert.Empty(t, ft)
@@ -77,7 +77,7 @@ func TestGet_OnRelationalWhenExistingFrequencyTable_ShouldReturnElement(t *testi
 		WithArgs(1234567890).
 		WillReturnRows(rowsItems)
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 	ft, err := ftr.Get(context.TODO(), 1234567890)
 
 	assert.Equal(t, int64(1234567890), ft.ID)
@@ -101,7 +101,7 @@ func TestSave_OnRelationalWhenMissingMandatoryValues_ShouldReturnError(t *testin
 
 	ft := entity.FrequencyTable{}
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 	id, err := ftr.Save(context.TODO(), ft)
 
 	assert.Equal(t, int64(0), id)
@@ -123,7 +123,7 @@ func TestSave_OnRelationalWhenSQLError_ShouldReturnError(t *testing.T) {
 		WithArgs("testname", now).
 		WillReturnError(errors.New("sql: unexisting table"))
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 
 	ft := entity.FrequencyTable{
 		Name:        "testname",
@@ -161,7 +161,7 @@ func TestSave_OnRelationalWhenErrorInsertingItems_ShouldReturnError(t *testing.T
 		WillReturnError(errors.New("sql: invalid value"))
 	mock.ExpectRollback()
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 
 	ft := entity.FrequencyTable{
 		Name:        "testname",
@@ -198,7 +198,7 @@ func TestSave_OnRelationalWhenValidFrequencyTable_ShouldReturnNoError(t *testing
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 
-	ftr := persistence.NewRelational(db)
+	ftr := persistence.NewPostgreSQL(db)
 
 	ft := entity.FrequencyTable{
 		Name:        "testname",

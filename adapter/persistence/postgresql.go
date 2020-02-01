@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"database/sql"
 
@@ -18,18 +19,38 @@ var (
 	ErrMissingFields = errors.New("Missing mandatory fields")
 )
 
-type relational struct {
+type postgresql struct {
 	db *sql.DB
 }
 
-// NewRelational creates a new FrequencyTableRepository backed up by a Relational Database.
-func NewRelational(conn *sql.DB) repository.FrequencyTableRepository {
-	return &relational{
+// NewPostgreSQL creates a new FrequencyTableRepository backed up by a Relational Database.
+func NewPostgreSQL(conn *sql.DB) repository.FrequencyTableRepository {
+	return &postgresql{
 		db: conn,
 	}
 }
 
-func (r *relational) Save(ctx context.Context, ft entity.FrequencyTable) (int64, error) {
+// NewConnection opens a connection between the application and the database and checks its validity.
+// It returns the connection, a deferrable operation and error if present.
+func NewConnection(host string, port int, user string, password string, dbname string) (*sql.DB, func(), error) {
+	connInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", connInfo)
+	if err != nil {
+		log.WithError(err).Fatal(fmt.Sprintf("error opening connection - %s", connInfo))
+		return nil, func() {}, err
+	}
+
+	if err = db.Ping(); err != nil {
+		log.WithError(err).Fatal(fmt.Sprintf("error pinging remote server"))
+		return nil, func() {}, err
+	}
+
+	return db, func() { db.Close() }, nil
+}
+
+func (r *postgresql) Save(ctx context.Context, ft entity.FrequencyTable) (int64, error) {
 	if ft.Values == nil {
 		return 0, ErrMissingFields
 	}
@@ -78,7 +99,7 @@ func (r *relational) Save(ctx context.Context, ft entity.FrequencyTable) (int64,
 	return id, nil
 }
 
-func (r *relational) Get(ctx context.Context, ID int64) (entity.FrequencyTable, error) {
+func (r *postgresql) Get(ctx context.Context, ID int64) (entity.FrequencyTable, error) {
 	query := "SELECT id, \"name\", date_created, last_updated FROM frequency_table WHERE id=$1"
 	ftGetStmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
