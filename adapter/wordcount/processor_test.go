@@ -37,7 +37,9 @@ func TestExtract_OnProcessorWithFailingParsingStep_ShouldReturnError(t *testing.
 			URL:  "https://github.com/eroatta/freqtable",
 		},
 		filenames: []string{"main.go"},
-		file:      []byte("packaaaage main"),
+		files: map[string][]byte{
+			"main.go": []byte("paaaaaackage main"),
+		},
 	}
 
 	config := wordcount.ProcessorConfig{
@@ -49,6 +51,36 @@ func TestExtract_OnProcessorWithFailingParsingStep_ShouldReturnError(t *testing.
 
 	assert.EqualError(t, err, wordcount.ErrParsingFile.Error())
 }
+func TestExtract_OnProcessorWithOneFailedFileParsingStep_ShouldReturnReturnValidResults(t *testing.T) {
+	cloner := testCloner{
+		repository: wordcount.Repository{
+			Name: "freqtable",
+			URL:  "https://github.com/eroatta/freqtable",
+		},
+		filenames: []string{"main.go", "test.go"},
+		files: map[string][]byte{
+			"main.go": []byte("packaaaage main"),
+			"test.go": []byte("package main"),
+		},
+	}
+
+	miner := testMiner{
+		results: map[string]int{
+			"main": 1,
+		},
+	}
+
+	config := wordcount.ProcessorConfig{
+		Cloner: cloner,
+		Miner:  miner,
+	}
+	processor := wordcount.NewProcessor(config)
+	results, err := processor.Extract("https://github.com/eroatta/freqtable")
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(results))
+	assert.Equal(t, 1, results["main"])
+}
 
 func TestExtract_OnProcessor_ShouldReturnValidResults(t *testing.T) {
 	cloner := testCloner{
@@ -57,7 +89,9 @@ func TestExtract_OnProcessor_ShouldReturnValidResults(t *testing.T) {
 			URL:  "https://github.com/eroatta/freqtable",
 		},
 		filenames: []string{"main.go"},
-		file:      []byte("package main"),
+		files: map[string][]byte{
+			"main.go": []byte("package main"),
+		},
 	}
 
 	miner := testMiner{
@@ -81,7 +115,7 @@ func TestExtract_OnProcessor_ShouldReturnValidResults(t *testing.T) {
 type testCloner struct {
 	repository wordcount.Repository
 	filenames  []string
-	file       []byte
+	files      map[string][]byte
 	err        error
 }
 
@@ -98,7 +132,7 @@ func (t testCloner) Filenames() ([]string, error) {
 }
 
 func (t testCloner) File(name string) ([]byte, error) {
-	return t.file, nil
+	return t.files[name], nil
 }
 
 type testMiner struct {

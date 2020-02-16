@@ -38,13 +38,21 @@ func (p Processor) Extract(url string) (map[string]int, error) {
 	// parsing & mining steps
 	parsedc := parse(filesc)
 	files := merge(parsedc)
+
+	valid := make([]File, 0)
 	for _, file := range files {
 		if file.Error != nil {
 			log.WithError(file.Error).Error(fmt.Sprintf("error when trying to parse file %s", file.Name))
-			return nil, ErrParsingFile
+			continue
 		}
+		valid = append(valid, file)
 	}
-	miningResults := mine(files, p.config.Miner)
 
+	// if every file can't be parsed, then fail
+	if len(valid) == 0 {
+		return nil, ErrParsingFile
+	}
+
+	miningResults := mine(valid, p.config.Miner)
 	return miningResults.Results(), nil
 }
