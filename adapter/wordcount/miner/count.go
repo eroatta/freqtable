@@ -10,6 +10,7 @@ import (
 )
 
 var cleaner = regexp.MustCompile("[^a-zA-Z0-9]")
+var onlyNumbers = regexp.MustCompile("[0-9]+")
 
 // Count handles the word count mining process.
 type Count struct {
@@ -62,7 +63,11 @@ func (m Count) Visit(node ast.Node) ast.Visitor {
 
 	for _, token := range tokens {
 		for _, splitting := range conserv.Split(token) {
-			m.words[strings.ToLower(splitting)]++
+			w := strings.ToLower(splitting)
+			if len(w) < 2 || onlyNumbers.MatchString(w) {
+				continue
+			}
+			m.words[w]++
 		}
 	}
 
@@ -122,7 +127,14 @@ func countOnVarConstDecl(elem *ast.GenDecl) []string {
 
 			for _, value := range valSpec.Values {
 				if val, ok := value.(*ast.BasicLit); ok && val.Kind == token.STRING {
-					tokens = append(tokens, strings.Replace(val.Value, "\"", "", -1))
+					cleanValue := strings.Trim(cleaner.ReplaceAllString(val.Value, " "), "")
+					for _, word := range strings.Split(cleanValue, " ") {
+						if word == "" {
+							continue
+						}
+
+						tokens = append(tokens, word)
+					}
 				}
 			}
 		}

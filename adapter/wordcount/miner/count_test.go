@@ -49,25 +49,25 @@ func TestVisit_OnCount_ShouldSplitTheIdentifiers(t *testing.T) {
 			name: "VarDeclNode",
 			src: `
 				package main
-				var testIden string
+				var testIdentifier string
 			`,
 			uniqueWords: 2,
 			expected: map[string]int{
-				"test": 1,
-				"iden": 1,
+				"test":       1,
+				"identifier": 1,
 			},
 		},
 		{
 			name: "VarDelNode_MultipleNames",
 			src: `
 				package main
-				var testIden, testBar string
+				var testIdentifier, testBar string
 			`,
 			uniqueWords: 3,
 			expected: map[string]int{
-				"test": 2,
-				"iden": 1,
-				"bar":  1,
+				"test":       2,
+				"identifier": 1,
+				"bar":        1,
 			},
 		},
 		{
@@ -75,45 +75,45 @@ func TestVisit_OnCount_ShouldSplitTheIdentifiers(t *testing.T) {
 			src: `
 				package main
 				var (
-					testIden = "boo"
+					testIdentifier = "boo"
 					foo = "bar"
 				)
 			`,
 			uniqueWords: 5,
 			expected: map[string]int{
-				"test": 1,
-				"iden": 1,
-				"boo":  1,
-				"foo":  1,
-				"bar":  1,
+				"test":       1,
+				"identifier": 1,
+				"boo":        1,
+				"foo":        1,
+				"bar":        1,
 			},
 		},
 		{
 			name: "ConstDeclNode",
 			src: `
 				package main
-				const testIden = "boo"
+				const testIdentifier = "boo"
 			`,
 			uniqueWords: 3,
 			expected: map[string]int{
-				"test": 1,
-				"iden": 1,
-				"boo":  1,
+				"test":       1,
+				"identifier": 1,
+				"boo":        1,
 			},
 		},
 		{
 			name: "ConstDeclNode_MultipleNamesAndValues",
 			src: `
 				package main
-				const testIden, foo = "boo", "bar"
+				const testIdentifier, foo = "boo", "bar"
 			`,
 			uniqueWords: 5,
 			expected: map[string]int{
-				"test": 1,
-				"iden": 1,
-				"boo":  1,
-				"foo":  1,
-				"bar":  1,
+				"test":       1,
+				"identifier": 1,
+				"boo":        1,
+				"foo":        1,
+				"bar":        1,
 			},
 		},
 		{
@@ -121,17 +121,36 @@ func TestVisit_OnCount_ShouldSplitTheIdentifiers(t *testing.T) {
 			src: `
 				package main
 				const (
-					testIden = "boo"
+					testIdentifier = "boo"
 					foo = "bar"
 				)
 			`,
 			uniqueWords: 5,
 			expected: map[string]int{
-				"test": 1,
-				"iden": 1,
-				"boo":  1,
-				"foo":  1,
-				"bar":  1,
+				"test":       1,
+				"identifier": 1,
+				"boo":        1,
+				"foo":        1,
+				"bar":        1,
+			},
+		},
+		{
+			name: "ConstDeclNode_BlockAndCompoundValues",
+			src: `
+				package main
+				const (
+					testIdentifier = "boo star"
+					foo = "bar"
+				)
+			`,
+			uniqueWords: 6,
+			expected: map[string]int{
+				"test":       1,
+				"identifier": 1,
+				"boo":        1,
+				"foo":        1,
+				"bar":        1,
+				"star":       1,
 			},
 		},
 		{
@@ -288,7 +307,7 @@ func TestVisit_OnCount_ShouldSplitTheIdentifiers(t *testing.T) {
 				*/
 				type abc int
 			`,
-			uniqueWords: 20,
+			uniqueWords: 18,
 			expected: map[string]int{
 				"my":        2,
 				"interface": 1,
@@ -306,8 +325,6 @@ func TestVisit_OnCount_ShouldSplitTheIdentifiers(t *testing.T) {
 				"obj":       1,
 				"call":      1,
 				"route":     1,
-				"v":         1,
-				"1":         1,
 				"text":      1,
 				"comment":   5,
 			},
@@ -633,9 +650,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 	`
 
 	expectedWords := map[string]int{
-		"1":              2,
-		"2014":           1,
-		"a":              19,
 		"absolute":       3,
 		"access":         1,
 		"add":            1,
@@ -675,7 +689,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"delete":         6,
 		"different":      1,
 		"dir":            1,
-		"e":              1,
 		"engine":         1,
 		"err":            2,
 		"example":        4,
@@ -693,7 +706,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"fs":             5,
 		"function":       1,
 		"functions":      1,
-		"g":              1,
 		"get":            7,
 		"gin":            2,
 		"git":            2,
@@ -708,7 +720,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"head":           6,
 		"http":           6,
 		"hub":            2,
-		"i":              4,
 		"ico":            2,
 		"if":             3,
 		"implementation": 1,
@@ -738,7 +749,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"middleware":     6,
 		"middlewares":    1,
 		"mit":            1,
-		"n":              2,
 		"new":            2,
 		"nolisting":      1,
 		"non":            1,
@@ -777,7 +787,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"route":          2,
 		"router":         22,
 		"routes":         5,
-		"s":              2,
 		"same":           1,
 		"see":            2,
 		"serve":          1,
@@ -804,7 +813,6 @@ func TestVisit_OnCountWithFullFile_ShouldSplitCommentsAndIdentifiers(t *testing.
 		"use":            7,
 		"used":           6,
 		"user":           1,
-		"v":              4,
 		"var":            1,
 		"we":             1,
 		"with":           3,
